@@ -1,0 +1,410 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
+  --blue:#58a6ff;--teal:#3fb950;--amber:#d29922;--red:#f85149;--purple:#a371f7;
+  --text:#e6edf3;--muted:#7d8590;--mono:'Courier New',monospace;
+}
+#player{background:var(--bg);border-radius:14px;overflow:hidden;border:1px solid var(--border);font-family:var(--font-sans,sans-serif);color:var(--text)}
+#screen{position:relative;height:380px;overflow:hidden;background:var(--bg)}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px 40px;opacity:0;transition:opacity .6s ease;pointer-events:none}
+.scene.visible{opacity:1;pointer-events:auto}
+
+/* Scene 0 - Title */
+.title-wrap{text-align:center}
+.big-title{font-size:26px;font-weight:500;line-height:1.3;margin-bottom:10px}
+.subtitle-line{font-size:14px;color:var(--muted);letter-spacing:.5px}
+.tag-row{display:flex;gap:8px;justify-content:center;margin-top:18px}
+.tag{font-size:11px;padding:4px 12px;border-radius:20px;font-family:var(--mono);letter-spacing:.5px}
+.tag-blue{background:rgba(88,166,255,.12);color:var(--blue);border:1px solid rgba(88,166,255,.25)}
+.tag-teal{background:rgba(63,185,80,.12);color:var(--teal);border:1px solid rgba(63,185,80,.25)}
+.tag-purple{background:rgba(163,113,247,.12);color:var(--purple);border:1px solid rgba(163,113,247,.25)}
+.animated-rings{position:absolute;width:280px;height:280px;opacity:.06}
+.animated-rings circle{fill:none;stroke:var(--blue)}
+
+/* Scene 1 - Registration */
+.s1-layout{width:100%;max-width:560px}
+.scene-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+.scene-heading{font-size:20px;font-weight:500;margin-bottom:22px;text-align:center}
+.flow-track{display:flex;align-items:center;gap:0;width:100%}
+.fbox{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;transition:all .4s}
+.fbox-title{font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.fbox-val{font-size:13px;font-weight:500}
+.fbox.lit-blue{border-color:var(--blue);box-shadow:0 0 0 1px rgba(88,166,255,.2)}
+.fbox.lit-purple{border-color:var(--purple);box-shadow:0 0 0 1px rgba(163,113,247,.2)}
+.fbox.lit-teal{border-color:var(--teal);box-shadow:0 0 0 1px rgba(63,185,80,.2)}
+.farrow{color:var(--muted);padding:0 8px;font-size:16px;flex-shrink:0}
+.detail-row{display:flex;gap:10px;margin-top:14px;width:100%}
+.dcard{flex:1;background:var(--surface2);border-radius:8px;padding:12px}
+.dcard-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:7px}
+.dcard-name{font-size:12px;font-weight:500;margin-bottom:3px}
+.dcard-desc{font-size:11px;color:var(--muted);line-height:1.4}
+
+/* Scene 2 - Foreground service */
+.s2-layout{width:100%;max-width:540px}
+.service-box{background:var(--surface);border:1px solid rgba(210,153,34,.4);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sb-label{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.sb-title{font-size:15px;font-weight:500;font-family:var(--mono);color:var(--amber)}
+.sb-desc{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mini-card{background:var(--surface2);border-radius:8px;padding:12px}
+.mc-dot{width:8px;height:8px;border-radius:50%;margin-bottom:6px}
+.mc-title{font-size:12px;font-weight:500;margin-bottom:3px}
+.mc-desc{font-size:11px;color:var(--muted);line-height:1.4}
+
+/* Scene 3 - Transparency */
+.notif-mockup{background:var(--surface);border:1px solid rgba(210,153,34,.35);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;width:100%;max-width:400px;margin-bottom:16px;position:relative;overflow:hidden}
+.notif-accent{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber);border-radius:3px 0 0 3px}
+.notif-icon-box{width:36px;height:36px;background:rgba(210,153,34,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-text{flex:1}
+.notif-title{font-size:13px;font-weight:500}
+.notif-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.benefit-list{display:flex;flex-direction:column;gap:8px;width:100%;max-width:400px}
+.benefit-item{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--muted)}
+.bi-dot{width:6px;height:6px;border-radius:50%;margin-top:4px;flex-shrink:0}
+
+/* Scene 4 - Access control */
+.decision-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:520px}
+.dec-card{border-radius:12px;padding:16px}
+.dc-match{background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.3)}
+.dc-fail{background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.3)}
+.dec-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.dec-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dec-title{font-size:14px;font-weight:500}
+.dec-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.dec-item:last-child{border-bottom:none}
+.dec-mark{font-family:var(--mono);font-size:13px}
+.firebase-badge{background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.2);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;width:100%;max-width:520px}
+.fb-label{font-size:12px;color:var(--blue);font-family:var(--mono)}
+.fb-val{font-size:12px;color:var(--muted)}
+
+/* Scene 5 - Summary */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:500px;margin-bottom:14px}
+.sg-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px}
+.sg-num{font-family:var(--mono);font-size:20px;font-weight:700;margin-bottom:4px}
+.sg-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.sg-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.result-bar{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--muted);line-height:1.6;width:100%;max-width:500px}
+
+/* Timeline bar */
+#timeline-wrap{padding:0 20px 0;margin:0}
+#timeline-bar{height:3px;background:var(--surface2);border-radius:2px;position:relative;cursor:pointer;margin-bottom:0}
+#timeline-fill{height:100%;background:var(--blue);border-radius:2px;transition:width .25s linear;width:0%}
+#timeline-thumb{position:absolute;top:-5px;width:13px;height:13px;border-radius:50%;background:var(--blue);border:2px solid var(--bg);transform:translateX(-50%);left:0%;transition:left .25s linear}
+
+/* Controls bar */
+#controls{display:flex;align-items:center;gap:10px;padding:12px 20px 16px;background:var(--surface)}
+#play-btn{width:34px;height:34px;border-radius:50%;background:var(--blue);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+#play-btn:hover{background:#4090e0}
+.play-icon{width:0;height:0;border-style:solid;border-width:6px 0 6px 11px;border-color:transparent transparent transparent #fff;margin-left:2px}
+.pause-icon{display:flex;gap:3px}
+.pause-bar{width:3px;height:12px;background:#fff;border-radius:1px}
+#time-display{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:48px}
+#chapter-dots{display:flex;gap:6px;flex:1;justify-content:center}
+.cdot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .25s;border:none;padding:0}
+.cdot.active{background:var(--blue);transform:scale(1.2)}
+.cdot.done{background:var(--muted)}
+#chapter-label{font-size:12px;color:var(--muted);min-width:120px;text-align:right;font-family:var(--mono)}
+
+@keyframes spin-ring{to{stroke-dashoffset:-200}}
+@keyframes pulse-in{0%{opacity:0;transform:scale(.85)}100%{opacity:1;transform:scale(1)}}
+@keyframes slide-up{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes flow-in{0%{opacity:0;transform:translateX(-12px)}100%{opacity:1;transform:translateX(0)}}
+.anim-pulse{animation:pulse-in .5s ease both}
+.anim-up{animation:slide-up .5s ease both}
+.anim-up2{animation:slide-up .5s .15s ease both}
+.anim-up3{animation:slide-up .5s .3s ease both}
+.anim-flow{animation:flow-in .4s ease both}
+.anim-flow2{animation:flow-in .4s .15s ease both}
+.anim-flow3{animation:flow-in .4s .3s ease both}
+</style>
+
+<div id="player">
+  <div id="screen">
+
+    <div class="scene visible" id="sc0">
+      <svg class="animated-rings" viewBox="0 0 280 280" style="position:absolute">
+        <circle cx="140" cy="140" r="60" stroke-width="1" stroke-dasharray="30 10" style="animation:spin-ring 8s linear infinite"/>
+        <circle cx="140" cy="140" r="90" stroke-width=".5" stroke-dasharray="20 15" style="animation:spin-ring 12s linear infinite reverse"/>
+        <circle cx="140" cy="140" r="120" stroke-width=".5" stroke-dasharray="15 20" style="animation:spin-ring 16s linear infinite"/>
+      </svg>
+      <div class="title-wrap anim-pulse">
+        <div class="big-title">B2B Permission<br><span style="color:var(--blue)">Workflow</span> Explained</div>
+        <div class="subtitle-line">How device binding protects your wholesale pricing</div>
+        <div class="tag-row">
+          <span class="tag tag-blue">Firebase</span>
+          <span class="tag tag-teal">Access Control</span>
+          <span class="tag tag-purple">Security</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene" id="sc1">
+      <div class="s1-layout">
+        <div class="scene-label">Step 01</div>
+        <div class="scene-heading anim-pulse">Registration &amp; <span style="color:var(--blue)">Device Binding</span></div>
+        <div class="flow-track anim-up">
+          <div class="fbox lit-blue"><div class="fbox-title">User</div><div class="fbox-val">First launch</div></div>
+          <div class="farrow">→</div>
+          <div class="fbox lit-purple"><div class="fbox-title">System</div><div class="fbox-val" style="color:var(--purple);font-family:var(--mono);font-size:12px">Device ID captured</div></div>
+          <div class="farrow">→</div>
+          <div class="fbox lit-teal"><div class="fbox-title">Firebase</div><div class="fbox-val">B2B record stored</div></div>
+        </div>
+        <div class="detail-row anim-up2">
+          <div class="dcard anim-flow">
+            <div class="dcard-icon" style="background:rgba(88,166,255,.12)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="0" width="10" height="14" rx="2" stroke="var(--blue)" stroke-width="1.2"/><circle cx="7" cy="11" r="1" fill="var(--blue)"/></svg>
+            </div>
+            <div class="dcard-name">Unique Device ID</div>
+            <div class="dcard-desc">Hardware identifier extracted on first install</div>
+          </div>
+          <div class="dcard anim-flow2">
+            <div class="dcard-icon" style="background:rgba(163,113,247,.12)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="10" rx="2" stroke="var(--purple)" stroke-width="1.2"/><path d="M4 6h6M4 8.5h4" stroke="var(--purple)" stroke-width="1" stroke-linecap="round"/></svg>
+            </div>
+            <div class="dcard-name">Account link</div>
+            <div class="dcard-desc">Bound to registered mobile number</div>
+          </div>
+          <div class="dcard anim-flow3">
+            <div class="dcard-icon" style="background:rgba(63,185,80,.12)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7l6-6 6 6" stroke="var(--teal)" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="dcard-name">Firebase storage</div>
+            <div class="dcard-desc">Persistent cloud record survives restarts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene" id="sc2">
+      <div class="s2-layout">
+        <div class="scene-label">Step 02</div>
+        <div class="scene-heading anim-pulse">The <span style="color:var(--amber)">Foreground Sync</span> Task</div>
+        <div class="service-box anim-up">
+          <div class="sb-label">Android Service</div>
+          <div class="sb-title">FOREGROUND_SERVICE</div>
+          <div class="sb-desc">Triggered on every revisit — runs reliably even if user switches apps momentarily. OS cannot kill a foreground service.</div>
+        </div>
+        <div class="two-col anim-up2">
+          <div class="mini-card">
+            <div class="mc-dot" style="background:var(--purple)"></div>
+            <div class="mc-title">Integrity check</div>
+            <div class="mc-desc">Device ID verified against Firebase backend in real-time</div>
+          </div>
+          <div class="mini-card">
+            <div class="mc-dot" style="background:var(--teal)"></div>
+            <div class="mc-title">Data sync</div>
+            <div class="mc-desc">Local cache updated from server — always fresh pricing data</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene" id="sc3">
+      <div style="width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center">
+        <div class="scene-label">Step 03</div>
+        <div class="scene-heading anim-pulse" style="text-align:center">User <span style="color:var(--teal)">Transparency</span></div>
+        <div class="notif-mockup anim-up">
+          <div class="notif-accent"></div>
+          <div class="notif-icon-box">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="3" stroke="var(--amber)" stroke-width="1.3"/><path d="M8 4.5v5M8 11.5v.5" stroke="var(--amber)" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <div class="notif-text">
+            <div class="notif-title">Security Validation in Progress</div>
+            <div class="notif-sub">Verifying device authorization…</div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">NOW</div>
+        </div>
+        <div class="benefit-list anim-up2">
+          <div class="benefit-item"><div class="bi-dot" style="background:var(--teal)"></div>Android requires visible notification for foreground services</div>
+          <div class="benefit-item"><div class="bi-dot" style="background:var(--blue)"></div>B2B users see explicit validation — builds platform trust</div>
+          <div class="benefit-item"><div class="bi-dot" style="background:var(--amber)"></div>Trade secrets revealed only after validation completes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene" id="sc4">
+      <div style="width:100%;max-width:540px;display:flex;flex-direction:column;align-items:center">
+        <div class="scene-label">Step 04</div>
+        <div class="scene-heading anim-pulse" style="text-align:center"><span style="color:var(--purple)">Access Control</span> Decision</div>
+        <div class="firebase-badge anim-up">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="2" stroke="var(--blue)" stroke-width="1.2"/><path d="M5 4V3a3 3 0 016 0v1" stroke="var(--blue)" stroke-width="1.2"/></svg>
+          <div>
+            <div class="fb-label">Firebase lookup</div>
+            <div class="fb-val">Device ID + Mobile number → B2B account match?</div>
+          </div>
+        </div>
+        <div class="decision-wrap anim-up2">
+          <div class="dec-card dc-match">
+            <div class="dec-header"><div class="dec-dot" style="background:var(--teal)"></div><div class="dec-title" style="color:var(--teal)">Match found</div></div>
+            <div class="dec-item"><span class="dec-mark" style="color:var(--teal)">✓</span>WebApp view unlocked</div>
+            <div class="dec-item"><span class="dec-mark" style="color:var(--teal)">✓</span>Local data synced</div>
+            <div class="dec-item"><span class="dec-mark" style="color:var(--teal)">✓</span>Wholesale prices visible</div>
+            <div class="dec-item"><span class="dec-mark" style="color:var(--teal)">✓</span>Full B2B session active</div>
+          </div>
+          <div class="dec-card dc-fail">
+            <div class="dec-header"><div class="dec-dot" style="background:var(--red)"></div><div class="dec-title" style="color:var(--red)">Mismatch</div></div>
+            <div class="dec-item"><span class="dec-mark" style="color:var(--red)">✕</span>Session terminated</div>
+            <div class="dec-item"><span class="dec-mark" style="color:var(--red)">✕</span>No data exposed</div>
+            <div class="dec-item"><span class="dec-mark" style="color:var(--red)">✕</span>D2C users blocked</div>
+            <div class="dec-item"><span class="dec-mark" style="color:var(--red)">✕</span>Unauthorized denied</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene" id="sc5">
+      <div style="width:100%;max-width:520px;display:flex;flex-direction:column;align-items:center">
+        <div class="scene-label">Summary</div>
+        <div class="scene-heading anim-pulse" style="text-align:center">The Complete <span style="color:var(--purple)">Security Loop</span></div>
+        <div class="summary-grid anim-up">
+          <div class="sg-card"><div class="sg-num" style="color:var(--blue)">01</div><div class="sg-title">Register</div><div class="sg-desc">Device ID captured &amp; bound to B2B account in Firebase</div></div>
+          <div class="sg-card"><div class="sg-num" style="color:var(--amber)">02</div><div class="sg-title">Sync</div><div class="sg-desc">Every revisit triggers a reliable foreground service</div></div>
+          <div class="sg-card"><div class="sg-num" style="color:var(--teal)">03</div><div class="sg-title">Notify</div><div class="sg-desc">Persistent notification informs user of validation</div></div>
+          <div class="sg-card"><div class="sg-num" style="color:var(--purple)">04</div><div class="sg-title">Control</div><div class="sg-desc">Match unlocks B2B view — mismatch kills the session</div></div>
+        </div>
+        <div class="result-bar anim-up2"><span style="color:var(--teal);font-weight:500">Result:</span> D2C users never see wholesale pricing. Trade secrets stay protected. B2B clients get a seamless, verified experience.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="timeline-wrap" style="padding:10px 20px 0">
+    <div id="timeline-bar">
+      <div id="timeline-fill"></div>
+      <div id="timeline-thumb"></div>
+    </div>
+  </div>
+
+  <div id="controls">
+    <button id="play-btn" onclick="togglePlay()">
+      <div class="play-icon" id="play-icon"></div>
+    </button>
+    <span id="time-display">0:00</span>
+    <div id="chapter-dots"></div>
+    <span id="chapter-label">Intro</span>
+  </div>
+</div>
+
+<script>
+const scenes = [
+  {id:'sc0',label:'Intro',dur:4},
+  {id:'sc1',label:'Registration',dur:6},
+  {id:'sc2',label:'Foreground sync',dur:6},
+  {id:'sc3',label:'Transparency',dur:5},
+  {id:'sc4',label:'Access control',dur:6},
+  {id:'sc5',label:'Summary',dur:5}
+];
+
+const totalDur = scenes.reduce((a,s)=>a+s.dur,0);
+let current = 0;
+let playing = false;
+let elapsed = 0;
+let lastTs = null;
+let rafId = null;
+
+const dots = document.getElementById('chapter-dots');
+scenes.forEach((_,i)=>{
+  const d = document.createElement('button');
+  d.className='cdot'+(i===0?' active':'');
+  d.onclick=()=>{jumpTo(i);};
+  dots.appendChild(d);
+});
+
+function getSceneStart(idx){
+  let t=0;
+  for(let i=0;i<idx;i++) t+=scenes[i].dur;
+  return t;
+}
+
+function setScene(idx){
+  document.getElementById(scenes[current].id).classList.remove('visible');
+  current=idx;
+  const el=document.getElementById(scenes[current].id);
+  el.classList.add('visible');
+  el.querySelectorAll('[class*="anim-"]').forEach(n=>{
+    const cl=[...n.classList].filter(c=>c.startsWith('anim-'));
+    cl.forEach(c=>{n.classList.remove(c);void n.offsetWidth;n.classList.add(c);});
+  });
+  dots.querySelectorAll('.cdot').forEach((d,i)=>{
+    d.classList.remove('active','done');
+    if(i<current) d.classList.add('done');
+    else if(i===current) d.classList.add('active');
+  });
+  document.getElementById('chapter-label').textContent=scenes[current].label;
+}
+
+function updateUI(){
+  const pct=Math.min(elapsed/totalDur,1);
+  document.getElementById('timeline-fill').style.width=(pct*100)+'%';
+  document.getElementById('timeline-thumb').style.left=(pct*100)+'%';
+  const s=Math.floor(elapsed);
+  document.getElementById('time-display').textContent=Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;
+  let acc=0;
+  for(let i=0;i<scenes.length;i++){
+    acc+=scenes[i].dur;
+    if(elapsed<acc){
+      if(i!==current) setScene(i);
+      break;
+    }
+  }
+  if(elapsed>=totalDur){
+    elapsed=totalDur;
+    playing=false;
+    updatePlayBtn();
+  }
+}
+
+function tick(ts){
+  if(lastTs!=null){
+    const dt=(ts-lastTs)/1000;
+    elapsed=Math.min(elapsed+dt,totalDur);
+  }
+  lastTs=ts;
+  updateUI();
+  if(playing) rafId=requestAnimationFrame(tick);
+}
+
+function togglePlay(){
+  playing=!playing;
+  if(playing){
+    if(elapsed>=totalDur) elapsed=0;
+    lastTs=null;
+    rafId=requestAnimationFrame(tick);
+  } else {
+    cancelAnimationFrame(rafId);
+  }
+  updatePlayBtn();
+}
+
+function updatePlayBtn(){
+  const btn=document.getElementById('play-icon');
+  if(playing){
+    btn.outerHTML='<div class="pause-icon" id="play-icon"><div class="pause-bar"></div><div class="pause-bar"></div></div>';
+  } else {
+    btn.outerHTML='<div class="play-icon" id="play-icon"></div>';
+  }
+}
+
+function jumpTo(idx){
+  elapsed=getSceneStart(idx);
+  setScene(idx);
+  updateUI();
+  if(!playing){lastTs=null;}
+}
+
+document.getElementById('timeline-bar').addEventListener('click',function(e){
+  const r=this.getBoundingClientRect();
+  const pct=(e.clientX-r.left)/r.width;
+  elapsed=Math.max(0,Math.min(pct*totalDur,totalDur));
+  lastTs=null;
+  updateUI();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key===' '){e.preventDefault();togglePlay();}
+  if(e.key==='ArrowRight') jumpTo(Math.min(current+1,scenes.length-1));
+  if(e.key==='ArrowLeft') jumpTo(Math.max(current-1,0));
+});
+</script>
